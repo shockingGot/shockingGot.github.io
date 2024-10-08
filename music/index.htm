@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>球场电单车</title>
+    <title>music box</title>
 
     <style>
         body {
@@ -66,13 +66,29 @@
             border-radius: 50%;       /* 设置为50%以形成圆形 */
             object-fit: cover;        /* 确保图像的填充方式合适 */
         }
+        
+        
+       .progress-container {
+		  width: 100%;
+		  background-color: #eee;
+		  padding: 3px;
+		  border-radius: 5px;
+		  box-shadow: 0 1px 3px rgba(0,0,0,0.2) inset;
+		}
+
+		.progress-bar {
+		  width: 0%;
+		  height: 20px;
+		  background-color: #4CAF50;
+		  border-radius: 3px;
+		}
 
     </style>
 </head>
 
 <body>
   <div style="max-width:480px;min-width1:100vw;height:100vh;border:0px solid #222;position:relative;margin:auto auto;overflow:hidden;">
-    <div style="position:absolute;width:100%;z-index:3;padding:16px;text-align:center;color:#efefef;font-size:1.2em;opacity:0.65;font-weight:bold;" id="appTitle">- 球场电单车 -</div>
+    <div style="position:absolute;width:100%;z-index:3;padding:16px;text-align:center;color:#efefef;font-size:1.2em;opacity:0.65;font-weight:bold;" id="appTitle">- music box -</div>
     <div class="box" style="position:absolute;z-index:2;width:100%;height:100%;border:0px solid red;background1:red;">
        <!-- 歌词显示 -->
        <div class="perspective">
@@ -84,24 +100,38 @@
 
     <div style="position:absolute;z-index:1;right:10px;top:80px;">
         <img id="appImg" src="球场电单车长版2.png" class="circle-image">
+        
     </div>
 
-    <div style="position:absolute;z-index:20;width:100%;height:100%;display: flex;justify-content:center;align-items: center;border:0px solid red;opacity:0.45;font-weight:bold;color:white;font-size:60px;cursor:pointer;" onclick="this.style.display='none'">
-	播放▶
-    </div>
+	<div id="playBtn" style="position:absolute;z-index:20;right:10px;top:80px;width:300px;height:300px;display: flex;justify-content:center;align-items: center;border:0px solid red;opacity:0.45;font-weight:bold;color:white;font-size:120px;cursor:pointer;">
+		<span id="playBtnText">▶</span>
+	</div>    
 
   </div>
 
    <div style="position:fixed;z-index:10;bottom:10px;text-align:center;width:100vw;color:white;">
-        <!-- 用于选择本地文件 -->
-        <label for="fileInput" class="custom-button">选择mp3文件</label>
-        <input type="file" id="fileInput" accept="audio/mp3" style="display:none;">
+   
+		<!--<div class="progress-container">
+			<div class="progress-bar" id="progressBar"></div>
+		</div>-->
 
-        <label for="lrcInput" class="custom-button">选择lrc文件</label>
-        <input type="file" id="lrcInput" accept=".lrc" style="display:none;">
+		<div id="timeInfo"></div>
+		<input type="range" id="seekSlider" min="0" max="100" value="0" style="height:6px;width:300px;">
+   
 	<br/>
-        <!-- 音频播放控件 -->
-        <audio id="audioPlayer" controls></audio>
+	
+	
+		<div style="display:none;">
+			<!-- 用于选择本地文件 -->
+			<label for="fileInput" class="custom-button">选择mp3文件</label>
+			<input type="file" id="fileInput" accept="audio/mp3" style="display:none;">
+
+			<label for="lrcInput" class="custom-button">选择lrc文件</label>
+			<input type="file" id="lrcInput" accept=".lrc" style="display:none;">
+			<!-- 音频播放控件 -->
+			<audio id="audioPlayer" controls></audio>
+		
+		</div>
    </div>
 
    
@@ -154,11 +184,11 @@
 		lyricsArray = parseLRC(s);
                 	//var lyricsDiv = document.getElementById('lyrics');
                 
-                	lyricsArray.forEach(lyric => {
-                   	 	var p = document.createElement('p');
-                    		p.textContent = lyric.text;
-	　 		if(lyric.text == ''){
-	    			p.innerHTML = '&nbsp;'
+        	lyricsArray.forEach(lyric => {
+           	 	var p = document.createElement('p');
+            		p.textContent = lyric.text;
+				if(lyric.text == ''){
+						p.innerHTML = '&nbsp;'
 	    		}
                     		p.dataset.time = lyric.time;
                     		lyricsDiv.appendChild(p);
@@ -170,6 +200,12 @@
                 // 当音频播放时，同步歌词显示
                 const audioPlayer = document.getElementById('audioPlayer');
                 audioPlayer.addEventListener('timeupdate', () => {
+                
+					if(lrcContent==''){
+						console.log("lrcContent==''")
+						return
+					}
+                
                     const currentTime = audioPlayer.currentTime;
         
                     lyricsArray.forEach((lyric, index) => {
@@ -190,6 +226,8 @@
                             lyricsDiv.scrollTop = lyricElement.offsetTop - lyricsDiv.offsetTop - lyricsDiv.clientHeight / 2;
                         }
                     });
+                    
+                    seekSliderUpdate()
                 });
         
                 // 选择本地MP3文件并播放
@@ -205,14 +243,82 @@
 		audioPlayer.src = '球场电单车长版.mp3'
 
 	var played = false
-	document.body.addEventListener('click', function() {
-	    if(played){return}
-   
-            audioPlayer.play().catch(error => {
-                console.error("播放失败:", error);
-            });
-	    played = true
-        });
+	/*document.getElementById('body').addEventListener('click', function() {
+			if(played){
+				audioPlayer.pause();
+				document.getElementById('playBtn').style.display='flex'
+				played = false
+				return
+			}else{
+	   
+				audioPlayer.play().catch(error => {
+					console.error("播放失败:", error);
+				});
+				played = true
+			}
+        });*/
+        
+     
+        
+        
+        
+        
+		//var progressBar = document.getElementById('progressBar');
+		var seekSlider = document.getElementById('seekSlider');
+
+		// 更新进度条
+		/*function updateProgress(e) {
+		  var progress = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;
+		  progressBar.style.width = progress + '%';
+		  progressBar.innerHTML = e.
+		}*/
+
+		// 监听音频加载进度
+		//audioPlayer.addEventListener("progress", updateProgress);
+
+		// 监听滑块变化，调整音频播放进度
+		seekSlider.addEventListener('input', function(e) {
+		  var seekTime = audioPlayer.duration * (e.target.value / 100);
+		  audioPlayer.currentTime = seekTime;
+		});
+
+		// 监听播放进度，更新滑块位置
+		function seekSliderUpdate() {
+		  
+			if(!isNaN(audioPlayer.duration) && audioPlayer.duration > 0){
+				var sliderValue = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+				seekSlider.value = sliderValue;
+			}
+		  
+		  
+			document.getElementById('timeInfo').innerHTML = formatDuration(audioPlayer.currentTime) + '/' + formatDuration(audioPlayer.duration)
+		  
+		  
+		};
+
+
+
+		function formatDuration(durationInSeconds) {
+		
+			if(isNaN(durationInSeconds) || durationInSeconds == 0){
+				return '00:00';
+			}
+		
+		  var hours = Math.floor(durationInSeconds / 3600);
+		  var minutes = Math.floor((durationInSeconds - (hours * 3600)) / 60);
+		  var seconds = Math.floor(durationInSeconds - (hours * 3600) - (minutes * 60));
+
+		  // 添加前导零
+		  hours = hours.toString().padStart(2, '0');
+		  minutes = minutes.toString().padStart(2, '0');
+		  seconds = seconds.toString().padStart(2, '0');
+
+			if(hours=='00'){
+				return minutes + ':' + seconds;
+			}
+
+			return hours + ':' + minutes + ':' + seconds;
+		}
 
     </script>
 
@@ -279,6 +385,28 @@
 			audioPlayer.src = songfolder + '/' + songName + '.mp3'
 			
 			getLyric(songfolder,songName )
+			
+			
+			document.getElementById('playBtn').addEventListener('click', function() {
+				if(played){
+					audioPlayer.pause();
+					//document.getElementById('playBtnText').style.display=''
+					document.getElementById('playBtnText').innerHTML='▶'
+					
+					
+					played = false
+					return
+				}else{
+					//document.getElementById('playBtnText').style.display='none'
+					
+					document.getElementById('playBtnText').innerHTML='‖'
+					
+					audioPlayer.play().catch(error => {
+						console.error("播放失败:", error);
+					});
+					played = true
+				}
+			});
 		}
 		
 		
@@ -286,13 +414,15 @@
 			var xhr = new XMLHttpRequest();
 			xhr.open('GET', songfolder + '/' + songName + '.txt', true);
 			xhr.overrideMimeType('text/plain; charset=utf-8');
-			console.log(songfolder + '/' + songName + '.txt')
+			//console.log(songfolder + '/' + songName + '.txt')
 			xhr.onreadystatechange = function () {
 				if (xhr.readyState == 4 && xhr.status == 200) {
 					var content = xhr.responseText;
-					console.log(content); // 这里可以处理文件内容
+					//console.log(content); // 这里可以处理文件内容
 					
-					loadLRC(lrcPadding + content)
+					lrcContent = lrcPadding + content
+					
+					loadLRC(lrcContent)
 				}
 			};
 			xhr.send();
